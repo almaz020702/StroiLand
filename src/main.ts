@@ -8,6 +8,11 @@ async function start() {
 
 	app.use(cookieParser())
 
+	app.enableCors({
+		origin: 'http://localhost:3002', // Replace with the origin(s) of your frontend
+		credentials: true, // Enable credentials (cookies, authorization headers)
+	  });
+
 	await app.listen(PORT, () => {
 		console.log(`Server started working on PORT = ${PORT}`);
 	})
