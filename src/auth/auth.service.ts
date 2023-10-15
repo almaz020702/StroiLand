@@ -95,4 +95,9 @@ export class AuthService {
 			accessToken: token,
 		};
 	}
+
+	async logout(res: Response) {
+		res.clearCookie('accessToken');
+		return { message: 'User successfully logged out' };
+	}
 }
