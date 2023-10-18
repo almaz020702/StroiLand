@@ -37,6 +37,22 @@ export class AuthService {
 				email: userDto.email,
 				password: hashedPassword,
 				activationToken,
+				roles: {
+					create: [
+						{
+							Role: {
+								connectOrCreate: {
+									where: {
+										name: 'USER',
+									},
+									create: {
+										name: 'USER',
+									},
+								},
+							},
+						},
+					],
+				},
 			},
 		});
 		const token = this.jwtService.sign({

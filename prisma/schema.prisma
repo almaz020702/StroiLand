@@ -10,14 +10,32 @@ datasource db {
 model User {
   user_id         Int               @id @default(autoincrement())
   email           String            @unique
+  first_name      String?
+  last_name       String?
+  phone_number    String?
   password        String
-  role            String            @default("USER")
   activationToken String?           @unique
   isActivated     Boolean           @default(false)
   Order           Order[]
   PaymentInfo     PaymentInfo[]
   Review          Review[]
   ShippingAddress ShippingAddress[]
+  roles           UserRoles[]
+}
+
+model Role {
+  id    Int         @id @default(autoincrement())
+  name  String      @unique
+  users UserRoles[]
+}
+
+model UserRoles {
+  user_id Int
+  role_id Int
+  User    User @relation(fields: [user_id], references: [user_id])
+  Role    Role @relation(fields: [role_id], references: [id])
+
+  @@id([user_id, role_id])
 }
 
 model Product {
