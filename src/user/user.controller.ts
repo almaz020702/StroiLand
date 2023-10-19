@@ -2,6 +2,8 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpException,
+	HttpStatus,
 	InternalServerErrorException,
 	Put,
 	UseGuards,
@@ -12,6 +14,7 @@ import { UserService } from './user.service';
 import { TokenPayload } from 'src/interfaces/token-payload.interface';
 import { User } from './user.decorator';
 import { UpdateUserInfoDto } from './dto/update-user-info.dto';
+import { Order } from 'src/interfaces/order.interface';
 
 @Controller('user')
 export class UserController {
@@ -22,10 +25,8 @@ export class UserController {
 	async getUserInfo(@User() user: TokenPayload): Promise<UserInfo> {
 		try {
 			return this.userService.getUserInfo(user.id);
-		} catch {
-			throw new InternalServerErrorException(
-				'Failed to retrieve information about the user',
-			);
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to retrieve information about the user', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -37,10 +38,18 @@ export class UserController {
 	): Promise<void> {
 		try {
 			await this.userService.updateUserInfo(user.id, updatedData);
-		} catch {
-			throw new InternalServerErrorException(
-				'Failed to update information about the user',
-			);
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to update information about the user', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Get('/orders')
+	@UseGuards(UserAuthGuard)
+	async getOrderOfUser (@User() user: TokenPayload): Promise<Order[]> {
+		try {
+			return await this.userService.getOrdersOfUser(user.id);
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to get the information about the users orders', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }
