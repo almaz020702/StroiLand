@@ -3,7 +3,7 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { UserInfo } from 'src/interfaces/user.interface';
+import { UserInfo } from 'src/interfaces/user-info.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import * as bcrypt from 'bcryptjs';

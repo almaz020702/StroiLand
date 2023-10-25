@@ -5,20 +5,23 @@ import {
 	HttpException,
 	HttpStatus,
 	InternalServerErrorException,
+	Post,
 	Put,
 	UseGuards,
 } from '@nestjs/common';
 import { UserAuthGuard } from 'src/auth/user-auth.guard';
-import { UserInfo } from 'src/interfaces/user.interface';
+import { UserInfo } from 'src/interfaces/user-info.interface';
 import { UserService } from './user.service';
 import { TokenPayload } from 'src/interfaces/token-payload.interface';
 import { User } from './user.decorator';
 import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import { Order } from 'src/interfaces/order.interface';
+import { OrderService } from 'src/order/order.service';
+import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 
 @Controller('user')
 export class UserController {
-	constructor(private userService: UserService) {}
+	constructor(private userService: UserService, private orderService: OrderService) {}
 
 	@Get()
 	@UseGuards(UserAuthGuard)
@@ -48,6 +51,16 @@ export class UserController {
 	async getOrderOfUser (@User() user: TokenPayload): Promise<Order[]> {
 		try {
 			return await this.userService.getOrdersOfUser(user.id);
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to get the information about the users orders', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Post('/orders')
+	@UseGuards(UserAuthGuard)
+	async makeOrder(@User() user: TokenPayload, @Body() orderDto: CreateOrderDto): Promise<Order> {
+		try {
+			return await this.orderService.createOrder(user.id, orderDto);
 		} catch (e) {
 			throw new HttpException(e.message || 'Failed to get the information about the users orders', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}

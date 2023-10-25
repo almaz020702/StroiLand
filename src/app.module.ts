@@ -8,6 +8,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { EmailVerificationModule } from './email-verification/email-verification.module';
 import { AdminModule } from './admin/admin.module';
 import { APP_PIPE } from '@nestjs/core';
+import { OrderModule } from './order/order.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
 	imports: [
@@ -19,6 +21,8 @@ import { APP_PIPE } from '@nestjs/core';
 		PrismaModule,
 		EmailVerificationModule,
 		AdminModule,
+		OrderModule,
+		ProductModule,
 	],
 	controllers: [AppController],
 	providers: [
