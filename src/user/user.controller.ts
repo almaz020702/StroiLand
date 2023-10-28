@@ -7,6 +7,7 @@ import {
 	InternalServerErrorException,
 	Post,
 	Put,
+	Req,
 	UseGuards,
 } from '@nestjs/common';
 import { UserAuthGuard } from 'src/auth/user-auth.guard';
@@ -18,6 +19,7 @@ import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import { Order } from 'src/interfaces/order.interface';
 import { OrderService } from 'src/order/order.service';
 import { CreateOrderDto } from 'src/order/dto/create-order.dto';
+import { Request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -63,6 +65,16 @@ export class UserController {
 			return await this.orderService.createOrder(user.id, orderDto);
 		} catch (e) {
 			throw new HttpException(e.message || 'Failed to get the information about the users orders', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Get('orders/:id')
+	@UseGuards(UserAuthGuard)
+	async getOrderById(@User() user: TokenPayload, @Req() req: Request): Promise<Order> {
+		try {
+			return await this.orderService.getOrderById(user.id, parseInt(req.params.id))
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to get the information about the order with given ID', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }

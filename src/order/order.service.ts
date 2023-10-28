@@ -88,4 +88,17 @@ export class OrderService {
 		// Return the created order
 		return createdOrder;
 	}
+
+	async getOrderById(userId: number, orderId: number): Promise<Order> {
+		const order = await this.prismaService.order.findUnique({
+			where: {
+				order_id: orderId,
+				user_id: userId,
+			},
+		});
+		if (!order) {
+			throw new NotFoundException('Order with given ID was not found');
+		}
+		return order;
+	}
 }
