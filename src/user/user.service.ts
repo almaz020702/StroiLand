@@ -9,6 +9,7 @@ import { UpdateUserInfoDto } from './dto/update-user-info.dto';
 import * as bcrypt from 'bcryptjs';
 import { EmailVerificationService } from 'src/email-verification/email-verification.service';
 import { Order } from 'src/interfaces/order.interface';
+import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
 
 @Injectable()
 export class UserService {
@@ -86,5 +87,12 @@ export class UserService {
 			where: { user_id: userId },
 		});
 		return orders;
+	}
+
+	async addShippingAddress(userId: number, createShippingAddressDto: CreateShippingAddressDto): Promise<void> {
+		await this.prismaService.shippingAddress.create({data: {
+			user_id: userId,
+			...createShippingAddressDto
+		}})
 	}
 }

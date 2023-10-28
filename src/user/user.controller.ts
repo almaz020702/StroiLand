@@ -20,6 +20,7 @@ import { Order } from 'src/interfaces/order.interface';
 import { OrderService } from 'src/order/order.service';
 import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 import { Request } from 'express';
+import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
 
 @Controller('user')
 export class UserController {
@@ -75,6 +76,16 @@ export class UserController {
 			return await this.orderService.getOrderById(user.id, parseInt(req.params.id))
 		} catch (e) {
 			throw new HttpException(e.message || 'Failed to get the information about the order with given ID', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Post('/shippingAddress')
+	@UseGuards(UserAuthGuard)
+	async addShippingAddress(@User() user: TokenPayload, @Body() createShippingAddressDto: CreateShippingAddressDto): Promise<void> {
+		try {
+			await this.userService.addShippingAddress(user.id, createShippingAddressDto)
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to add shipping address', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }
