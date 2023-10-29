@@ -21,6 +21,7 @@ import { OrderService } from 'src/order/order.service';
 import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 import { Request } from 'express';
 import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
+import { ShippingAddress } from 'src/interfaces/shippingAddress.interface';
 
 @Controller('user')
 export class UserController {
@@ -86,6 +87,16 @@ export class UserController {
 			await this.userService.addShippingAddress(user.id, createShippingAddressDto)
 		} catch (e) {
 			throw new HttpException(e.message || 'Failed to add shipping address', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Get('/shippingAddress')
+	@UseGuards(UserAuthGuard)
+	async getShippingAddresses(@User() user: TokenPayload): Promise<ShippingAddress[]> {
+		try {
+			return this.userService.getShippingAddresses(user.id)
+		} catch (e) {
+			throw new HttpException(e.message || 'Failed to get shipping addresses', e.status || HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }
