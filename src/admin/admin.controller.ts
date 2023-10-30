@@ -3,11 +3,14 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpException,
+	HttpStatus,
 	InternalServerErrorException,
 	Post,
 	Put,
 	Req,
 	UploadedFile,
+	UseGuards,
 	UseInterceptors,
 	UsePipes,
 	ValidationPipe,
@@ -18,12 +21,17 @@ import { Request } from 'express';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Product } from 'src/interfaces/product.interface';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Roles } from 'src/roles/roles.decorator';
+import { RolesGuard } from 'src/roles/roles.guard';
+import { UserAuthGuard } from 'src/auth/user-auth.guard';
 
 @Controller('admin')
 export class AdminController {
 	constructor(private adminService: AdminService) {}
 
 	@Post('/createProduct')
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('ADMIN')
 	@UseInterceptors(FileInterceptor('image'))
 	async createProduct(
 		@Body() productDto: CreateProductDto,
@@ -31,8 +39,11 @@ export class AdminController {
 	): Promise<void> {
 		try {
 			await this.adminService.createProduct(productDto, file);
-		} catch (error) {
-			throw new InternalServerErrorException('Failed to create the product');
+		} catch (e) {
+			throw new HttpException(
+				e.message || 'Failed to create the product',
+				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 
@@ -58,6 +69,8 @@ export class AdminController {
 	}
 
 	@Put('/products/:id')
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('ADMIN')
 	async updateProductById(
 		@Req() req: Request,
 		@Body() updatedDto: UpdateProductDto,
@@ -71,14 +84,16 @@ export class AdminController {
 		}
 	}
 
-    @Delete('products/:id')
-    async deleteTaskById(@Req() req: Request): Promise<void> {
-        try {
-            this.adminService.deleteProductById(parseInt(req.params.id))
-        } catch (e) {
-            throw new InternalServerErrorException(
+	@Delete('products/:id')
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('ADMIN')
+	async deleteProductById(@Req() req: Request): Promise<void> {
+		try {
+			this.adminService.deleteProductById(parseInt(req.params.id));
+		} catch (e) {
+			throw new InternalServerErrorException(
 				'Failed to delete product with given ID',
 			);
-        }
-    }
+		}
+	}
 }

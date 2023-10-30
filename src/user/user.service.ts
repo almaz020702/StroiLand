@@ -11,6 +11,7 @@ import { EmailVerificationService } from 'src/email-verification/email-verificat
 import { Order } from 'src/interfaces/order.interface';
 import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
 import { ShippingAddress } from 'src/interfaces/shippingAddress.interface';
+import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
 
 @Injectable()
 export class UserService {
@@ -83,6 +84,21 @@ export class UserService {
 		);
 	}
 
+	async getUserRoles(userId: number): Promise<string[]> {
+		const userRoles = await this.prismaService.userRoles.findMany({
+		  where: { user_id: userId },
+		  include: { Role: true },
+		});
+	
+		if (!userRoles || userRoles.length === 0) {
+		  throw new NotFoundException('User roles not found');
+		}
+	
+		const roleNames = userRoles.map((userRole) => userRole.Role.name);
+	
+		return roleNames;
+	  }
+
 	async getOrdersOfUser(userId: number): Promise<Order[]> {
 		const orders = this.prismaService.order.findMany({
 			where: { user_id: userId },
@@ -96,8 +112,8 @@ export class UserService {
 	): Promise<void> {
 		await this.prismaService.shippingAddress.create({
 			data: {
-				user_id: userId,
 				...createShippingAddressDto,
+				user: { connect: { user_id: userId } },
 			},
 		});
 	}
@@ -107,5 +123,39 @@ export class UserService {
 			{ where: { user_id: userId } },
 		);
 		return shippingAddresses;
+	}
+
+	async updateShippingAddress(
+		userId: number,
+		updatedDto: UpdateShippingAddressDto,
+		addressId: number,
+	): Promise<void> {
+		const shippingAddress = this.prismaService.shippingAddress.findUnique({
+			where: { user_id: userId, address_id: addressId },
+		});
+		if (!shippingAddress) {
+			throw new NotFoundException('Shipping Address was not found');
+		}
+		await this.prismaService.shippingAddress.update({
+			where: { user_id: userId, address_id: addressId },
+			data: {
+				...updatedDto,
+			},
+		});
+	}
+
+	async deleteShippingAddress(
+		userId: number,
+		addressId: number,
+	): Promise<void> {
+		const shippingAddress = this.prismaService.shippingAddress.findUnique({
+			where: { user_id: userId, address_id: addressId },
+		});
+		if (!shippingAddress) {
+			throw new NotFoundException('Shipping Address was not found');
+		}
+		await this.prismaService.shippingAddress.delete({
+			where: { user_id: userId, address_id: addressId },
+		});
 	}
 }

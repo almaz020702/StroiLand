@@ -20,5 +20,6 @@ import { OrderModule } from 'src/order/order.module';
 			},
 		}),
 	],
+	exports: [UserService]
 })
 export class UserModule {}

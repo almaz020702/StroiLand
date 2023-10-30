@@ -10,6 +10,8 @@ import { AdminModule } from './admin/admin.module';
 import { APP_PIPE } from '@nestjs/core';
 import { OrderModule } from './order/order.module';
 import { ProductModule } from './product/product.module';
+import { PaymentModule } from './payment/payment.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
 	imports: [
@@ -23,6 +25,8 @@ import { ProductModule } from './product/product.module';
 		AdminModule,
 		OrderModule,
 		ProductModule,
+		PaymentModule,
+		RolesModule,
 	],
 	controllers: [AppController],
 	providers: [

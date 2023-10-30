@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { EmailVerificationModule } from 'src/email-verification/email-verification.module';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   providers: [AuthService],
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     EmailVerificationModule,
     PrismaModule,
+    UserModule,
     JwtModule.register({
       secret: process.env.SECRET_KEY,
       signOptions: {
