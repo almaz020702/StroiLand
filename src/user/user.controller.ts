@@ -12,28 +12,33 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { UserAuthGuard } from 'src/auth/user-auth.guard';
-import { UserInfo } from 'src/interfaces/user-info.interface';
+import { UserInfo } from 'src/user/interfaces/user-info.interface';
 import { UserService } from './user.service';
-import { TokenPayload } from 'src/interfaces/token-payload.interface';
+import { TokenPayload } from 'src/auth/interfaces/token-payload.interface';
 import { User } from './user.decorator';
 import { UpdateUserInfoDto } from './dto/update-user-info.dto';
-import { Order } from 'src/interfaces/order.interface';
+import { Order } from 'src/order/interfaces/order.interface';
 import { OrderService } from 'src/order/order.service';
 import { CreateOrderDto } from 'src/order/dto/create-order.dto';
 import { Request } from 'express';
-import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
-import { ShippingAddress } from 'src/interfaces/shippingAddress.interface';
-import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
+import { CreateShippingAddressDto } from '../shipping-address/dtos/create-shipping-address.dto';
+import { ShippingAddress } from 'src/shipping-address/interfaces/shippingAddress.interface';
+import { UpdateShippingAddressDto } from '../shipping-address/dtos/update-shipping-address.dto';
+import { ShippingAddressService } from 'src/shipping-address/shipping-address.service';
+import { RolesGuard } from 'src/roles/roles.guard';
+import { Roles } from 'src/roles/roles.decorator';
 
 @Controller('user')
 export class UserController {
 	constructor(
 		private userService: UserService,
 		private orderService: OrderService,
+		private shippingAddressService: ShippingAddressService
 	) {}
 
 	@Get()
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async getUserInfo(@User() user: TokenPayload): Promise<UserInfo> {
 		try {
 			return this.userService.getUserInfo(user.id);
@@ -46,7 +51,8 @@ export class UserController {
 	}
 
 	@Put()
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async updateUserInfo(
 		@User() user: TokenPayload,
 		@Body() updatedData: UpdateUserInfoDto,
@@ -62,10 +68,11 @@ export class UserController {
 	}
 
 	@Get('/orders')
-	@UseGuards(UserAuthGuard)
-	async getOrderOfUser(@User() user: TokenPayload): Promise<Order[]> {
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
+	async getOrdersOfUser(@User() user: TokenPayload): Promise<Order[]> {
 		try {
-			return await this.userService.getOrdersOfUser(user.id);
+			return await this.orderService.getOrdersOfUser(user.id);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to get the information about the users orders',
@@ -75,8 +82,9 @@ export class UserController {
 	}
 
 	@Post('/orders')
-	@UseGuards(UserAuthGuard)
-	async makeOrder(
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
+	async createOrder(
 		@User() user: TokenPayload,
 		@Body() orderDto: CreateOrderDto,
 	): Promise<Order> {
@@ -91,7 +99,8 @@ export class UserController {
 	}
 
 	@Get('orders/:id')
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async getOrderById(
 		@User() user: TokenPayload,
 		@Req() req: Request,
@@ -111,13 +120,14 @@ export class UserController {
 	}
 
 	@Post('/shippingAddress')
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async addShippingAddress(
 		@User() user: TokenPayload,
 		@Body() createShippingAddressDto: CreateShippingAddressDto,
 	): Promise<void> {
 		try {
-			await this.userService.addShippingAddress(
+			await this.shippingAddressService.addShippingAddress(
 				user.id,
 				createShippingAddressDto,
 			);
@@ -130,12 +140,13 @@ export class UserController {
 	}
 
 	@Get('/shippingAddress')
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async getShippingAddresses(
 		@User() user: TokenPayload,
 	): Promise<ShippingAddress[]> {
 		try {
-			return this.userService.getShippingAddresses(user.id);
+			return this.shippingAddressService.getShippingAddresses(user.id);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to get shipping addresses',
@@ -145,14 +156,15 @@ export class UserController {
 	}
 
 	@Put('shippingAddress/:addressId')
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async updateShippingAddress(
 		@User() user: TokenPayload,
 		@Body() updatedDto: UpdateShippingAddressDto,
 		@Req() req: Request,
 	): Promise<void> {
 		try {
-			this.userService.updateShippingAddress(
+			this.shippingAddressService.updateShippingAddress(
 				user.id,
 				updatedDto,
 				parseInt(req.params.addressId),
@@ -166,13 +178,14 @@ export class UserController {
 	}
 
 	@Delete('shippingAddress/:addressId')
-	@UseGuards(UserAuthGuard)
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
 	async deleteShippingAddress(
 		@User() user: TokenPayload,
 		@Req() req: Request,
 	): Promise<void> {
 		try {
-			this.userService.deleteShippingAddress(
+			this.shippingAddressService.deleteShippingAddress(
 				user.id,
 				parseInt(req.params.addressId),
 			);

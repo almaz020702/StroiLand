@@ -3,10 +3,10 @@ import {
 	Injectable,
 	NotFoundException,
 } from '@nestjs/common';
-import { UserInfo } from 'src/interfaces/user-info.interface';
+import { UserInfo } from 'src/user/interfaces/user-info.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Order } from 'src/interfaces/order.interface';
+import { Order } from 'src/order/interfaces/order.interface';
 import { ProductService } from 'src/product/product.service';
 
 @Injectable()
@@ -100,5 +100,12 @@ export class OrderService {
 			throw new NotFoundException('Order with given ID was not found');
 		}
 		return order;
+	}
+
+	async getOrdersOfUser(userId: number): Promise<Order[]> {
+		const orders = this.prismaService.order.findMany({
+			where: { user_id: userId },
+		});
+		return orders;
 	}
 }

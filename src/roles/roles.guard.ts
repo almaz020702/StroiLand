@@ -23,7 +23,7 @@ export class RolesGuard implements CanActivate {
     const userRoles = await this.userService.getUserRoles(userId);
   
     // Check if the user has the required roles to access the endpoint
-    const hasRequiredRoles = roles.every((role) => userRoles.includes(role));
+    const hasRequiredRoles = roles.some((role) => userRoles.includes(role));
   
     return hasRequiredRoles;
   }

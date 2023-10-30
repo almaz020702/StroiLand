@@ -18,16 +18,17 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AdminService } from './admin.service';
 import { Request } from 'express';
-import { CreateProductDto } from './dto/create-product.dto';
-import { Product } from 'src/interfaces/product.interface';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductDto } from '../product/dto/create-product.dto';
+import { Product } from 'src/product/interfaces/product.interface';
+import { UpdateProductDto } from '../product/dto/update-product.dto';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { UserAuthGuard } from 'src/auth/user-auth.guard';
+import { ProductService } from 'src/product/product.service';
 
 @Controller('admin')
 export class AdminController {
-	constructor(private adminService: AdminService) {}
+	constructor(private productService: ProductService) {}
 
 	@Post('/createProduct')
 	@UseGuards(UserAuthGuard, RolesGuard)
@@ -38,7 +39,7 @@ export class AdminController {
 		@UploadedFile() file: Express.Multer.File,
 	): Promise<void> {
 		try {
-			await this.adminService.createProduct(productDto, file);
+			await this.productService.createProduct(productDto, file);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to create the product',
@@ -50,7 +51,7 @@ export class AdminController {
 	@Get('/products')
 	async getAllProducts(): Promise<Product[]> {
 		try {
-			const products = await this.adminService.getAllProducts();
+			const products = await this.productService.getAllProducts();
 			return products;
 		} catch (error) {
 			throw new InternalServerErrorException('Failed to retrieve products');
@@ -60,7 +61,7 @@ export class AdminController {
 	@Get('/products/:id')
 	async getProductById(@Req() req: Request): Promise<Product> {
 		try {
-			return this.adminService.getProductById(parseInt(req.params.id));
+			return this.productService.getProductById(parseInt(req.params.id));
 		} catch (e) {
 			throw new InternalServerErrorException(
 				'Failed to retrieve product with given ID',
@@ -76,7 +77,10 @@ export class AdminController {
 		@Body() updatedDto: UpdateProductDto,
 	): Promise<void> {
 		try {
-			this.adminService.updateProductById(parseInt(req.params.id), updatedDto);
+			this.productService.updateProductById(
+				parseInt(req.params.id),
+				updatedDto,
+			);
 		} catch (e) {
 			throw new InternalServerErrorException(
 				'Failed to update product with given ID',
@@ -89,7 +93,7 @@ export class AdminController {
 	@Roles('ADMIN')
 	async deleteProductById(@Req() req: Request): Promise<void> {
 		try {
-			this.adminService.deleteProductById(parseInt(req.params.id));
+			this.productService.deleteProductById(parseInt(req.params.id));
 		} catch (e) {
 			throw new InternalServerErrorException(
 				'Failed to delete product with given ID',

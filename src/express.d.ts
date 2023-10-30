@@ -1,4 +1,4 @@
-import { Payload } from "./interfaces/token-payload.interface";
+import { Payload } from "./auth/interfaces/token-payload.interface";
 
 export declare global {
 	type AnyObject = Record<string, unknown>;

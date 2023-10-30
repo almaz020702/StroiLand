@@ -8,11 +8,11 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { UserAuthGuard } from 'src/auth/user-auth.guard';
-import { TokenPayload } from 'src/interfaces/token-payload.interface';
+import { TokenPayload } from 'src/auth/interfaces/token-payload.interface';
 import { User } from 'src/user/user.decorator';
 import { PaymentService } from './payment.service';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
-import { PaymentInfo } from 'src/interfaces/payment-info.interface';
+import { PaymentInfo } from 'src/payment/interfaces/payment-info.interface';
 
 @Controller('user/payment')
 export class PaymentController {
