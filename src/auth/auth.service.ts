@@ -5,6 +5,8 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { EmailVerificationService } from 'src/email-verification/email-verification.service';
+import { TokenPair } from './interfaces/token-pair.interface';
+import { User } from 'src/user/interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -55,14 +57,8 @@ export class AuthService {
 				},
 			},
 		});
-		const token = this.jwtService.sign({
-			id: user.user_id,
-			email: user.email,
-		});
-		res.cookie('accessToken', token, {
-			maxAge: 60 * 60 * 1000,
-			httpOnly: true,
-		});
+		const tokens = this.generateTokens(user);
+		this.sendTokensInCookie(tokens, res);
 		await this.emailVerificationService.sendVerificationEmail(
 			user.email,
 			activationToken,
@@ -73,7 +69,7 @@ export class AuthService {
 				id: user.user_id,
 				email: user.email,
 			},
-			accessToken: token,
+			tokens: tokens,
 		};
 	}
 
@@ -94,26 +90,61 @@ export class AuthService {
 		if (!comparePassword) {
 			throw new HttpException('Incorrect password', HttpStatus.BAD_REQUEST);
 		}
-		const token = this.jwtService.sign({
-			id: candidate.user_id,
-			email: candidate.email,
-		});
-		res.cookie('accessToken', token, {
-			maxAge: 60 * 60 * 1000,
-			httpOnly: true,
-		});
+		const tokens = this.generateTokens(candidate);
+		this.sendTokensInCookie(tokens, res);
 		return {
 			message: 'User login successful',
 			user: {
 				id: candidate.user_id,
 				email: candidate.email,
 			},
-			accessToken: token,
+			tokens,
 		};
 	}
 
-	async logout(res: Response) {
-		res.clearCookie('accessToken');
+	async logout(res: Response): Promise<{ message: string }> {
+		this.clearTokensInCookie(res);
 		return { message: 'User successfully logged out' };
+	}
+
+	private generateTokens(user: User): TokenPair {
+		const accessToken = this.jwtService.sign({
+			id: user.user_id,
+			email: user.email,
+		});
+		const refreshToken = this.jwtService.sign({ email: user.email });
+		return { accessToken, refreshToken };
+	}
+
+	private sendTokensInCookie(
+		tokens: { accessToken: string; refreshToken: string },
+		res: Response,
+	): void {
+		res.cookie('accessToken', tokens.accessToken, {
+			maxAge: 60 * 60 * 1000,
+			httpOnly: true,
+		});
+		res.cookie('refreshToken', tokens.refreshToken, {
+			maxAge: 60 * 60 * 1000 * 24,
+			httpOnly: true,
+		});
+	}
+
+	private clearTokensInCookie(res: Response): void {
+		res.clearCookie('accessToken');
+		res.clearCookie('refreshToken');
+	}
+
+	async refreshToken(userId: number, res: Response) {
+		const user = await this.prismaService.user.findUnique({
+			where: { user_id: userId },
+		});
+		const tokens = this.generateTokens(user);
+		this.sendTokensInCookie(tokens, res);
+
+		return {
+			message: 'Tokens were refreshed',
+			tokens,
+		};
 	}
 }
