@@ -4,6 +4,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { Product } from 'src/product/interfaces/product.interface';
 import { Review } from './interfaces/review.interface';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { PaginationQueryDto } from 'src/product/dto/pagination-query.dto';
 
 @Injectable()
 export class ReviewService {
@@ -74,9 +75,16 @@ export class ReviewService {
 		await this.updateProductRating(productId);
 	}
 
-	async getAllReviewsOfProduct(productId: number): Promise<Review[]> {
+	async getAllReviewsOfProduct(
+		paginationDto: PaginationQueryDto,
+		productId: number,
+	): Promise<Review[]> {
+		const offset = (paginationDto.page - 1) * paginationDto.limit;
+
 		return await this.prismaService.review.findMany({
 			where: { product_id: productId },
+			skip: offset,
+			take: paginationDto.limit,
 		});
 	}
 

@@ -1,11 +1,13 @@
 import {
-    Body,
+	Body,
 	Controller,
 	Get,
 	HttpException,
 	HttpStatus,
 	InternalServerErrorException,
+	ParseIntPipe,
 	Post,
+	Query,
 	Req,
 	UseGuards,
 } from '@nestjs/common';
@@ -20,6 +22,7 @@ import { TokenPayload } from 'src/auth/interfaces/token-payload.interface';
 import { CreateReviewDto } from 'src/review/dto/create-review.dto';
 import { ReviewService } from 'src/review/review.service';
 import { Review } from 'src/review/interfaces/review.interface';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Controller('products')
 export class ProductController {
@@ -28,13 +31,18 @@ export class ProductController {
 		private reviewService: ReviewService,
 	) {}
 
-	@Get('')
-	async getAllProducts(): Promise<Product[]> {
+	@Get()
+	async getAllProducts(
+		@Query() paginationDto: PaginationQueryDto,
+	): Promise<Product[]> {
 		try {
-			const products = await this.productService.getAllProducts();
+			const products = await this.productService.getAllProducts(paginationDto);
 			return products;
-		} catch (error) {
-			throw new InternalServerErrorException('Failed to retrieve products');
+		} catch (e) {
+			throw new HttpException(
+				e.message || 'Failed to get all products',
+				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+			);
 		}
 	}
 
@@ -43,8 +51,9 @@ export class ProductController {
 		try {
 			return await this.productService.getProductById(parseInt(req.params.id));
 		} catch (e) {
-			throw new InternalServerErrorException(
-				'Failed to retrieve product with given ID',
+			throw new HttpException(
+				e.message || 'Failed to get a product',
+				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
 	}
@@ -55,10 +64,14 @@ export class ProductController {
 	async createReview(
 		@User() user: TokenPayload,
 		@Body() createReviewDto: CreateReviewDto,
-        @Req() req: Request
+		@Req() req: Request,
 	): Promise<void> {
 		try {
-			await this.reviewService.createReview(user.id, parseInt(req.params.productId), createReviewDto);
+			await this.reviewService.createReview(
+				user.id,
+				parseInt(req.params.productId),
+				createReviewDto,
+			);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to create a review',
@@ -67,15 +80,21 @@ export class ProductController {
 		}
 	}
 
-    @Get('/:productId/reviews')
-    async getAllReviewsOfProduct(@Req() req: Request): Promise<Review[]> {
-        try {
-			return await this.reviewService.getAllReviewsOfProduct(parseInt(req.params.productId))
+	@Get('/:productId/reviews')
+	async getAllReviewsOfProduct(
+		@Query() paginationDto: PaginationQueryDto,
+		@Req() req: Request,
+	): Promise<Review[]> {
+		try {
+			return await this.reviewService.getAllReviewsOfProduct(
+				paginationDto,
+				parseInt(req.params.productId),
+			);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to get reviews',
 				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
-    }
+	}
 }

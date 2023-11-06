@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { Product } from 'src/product/interfaces/product.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,6 +11,7 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Injectable()
 export class ProductService {
@@ -44,8 +50,13 @@ export class ProductService {
 		});
 	}
 
-	async getAllProducts(): Promise<Product[]> {
-		return await this.prismaService.product.findMany();
+	async getAllProducts(paginationDto: PaginationQueryDto): Promise<Product[]> {
+		const offset = (paginationDto.page - 1) * paginationDto.limit;
+
+		return await this.prismaService.product.findMany({
+			skip: offset,
+			take: paginationDto.limit,
+		});
 	}
 
 	async getProductById(productId: number): Promise<Product> {
