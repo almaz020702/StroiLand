@@ -46,6 +46,7 @@ model Product {
   stock_quantity Int
   category_id    Int
   image_url      String
+  rating         Float       @default(0)
   OrderItem      OrderItem[]
   category       Category    @relation(fields: [category_id], references: [category_id])
   Review         Review[]

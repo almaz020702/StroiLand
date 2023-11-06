@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { EmailVerificationModule } from 'src/email-verification/email-verification.module';
 import { OrderModule } from 'src/order/order.module';
 import { ShippingAddressModule } from 'src/shipping-address/shipping-address.module';
+import { ReviewModule } from 'src/review/review.module';
 
 @Module({
 	providers: [UserService],
@@ -15,6 +16,7 @@ import { ShippingAddressModule } from 'src/shipping-address/shipping-address.mod
 		EmailVerificationModule,
 		forwardRef(()=>OrderModule),
 		ShippingAddressModule,
+		ReviewModule,
 		JwtModule.register({
 			secret: process.env.SECRET_KEY,
 			signOptions: {

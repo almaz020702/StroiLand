@@ -27,13 +27,16 @@ import { UpdateShippingAddressDto } from '../shipping-address/dtos/update-shippi
 import { ShippingAddressService } from 'src/shipping-address/shipping-address.service';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { Roles } from 'src/roles/roles.decorator';
+import { ReviewService } from 'src/review/review.service';
+import { Review } from 'src/review/interfaces/review.interface';
 
 @Controller('user')
 export class UserController {
 	constructor(
 		private userService: UserService,
 		private orderService: OrderService,
-		private shippingAddressService: ShippingAddressService
+		private shippingAddressService: ShippingAddressService,
+		private reviewService: ReviewService,
 	) {}
 
 	@Get()
@@ -171,7 +174,7 @@ export class UserController {
 			);
 		} catch (e) {
 			throw new HttpException(
-				e.message || 'Failed to update shipping addresse',
+				e.message || 'Failed to update shipping addresses',
 				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
@@ -185,13 +188,27 @@ export class UserController {
 		@Req() req: Request,
 	): Promise<void> {
 		try {
-			this.shippingAddressService.deleteShippingAddress(
+			await this.shippingAddressService.deleteShippingAddress(
 				user.id,
 				parseInt(req.params.addressId),
 			);
 		} catch (e) {
 			throw new HttpException(
-				e.message || 'Failed to delete shipping addresse',
+				e.message || 'Failed to delete shipping addresses',
+				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+	}
+
+	@Get('/reviews')
+	@UseGuards(UserAuthGuard, RolesGuard)
+	@Roles('USER', 'ADMIN')
+	async getReviewsOfUser(@User() user: TokenPayload): Promise<Review[]> {
+		try {
+			return await this.reviewService.getReviewsOfUser(user.id);
+		} catch (e) {
+			throw new HttpException(
+				e.message || 'Failed to get reviews of the user',
 				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}

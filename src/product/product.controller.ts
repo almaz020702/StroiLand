@@ -19,6 +19,7 @@ import { User } from 'src/user/user.decorator';
 import { TokenPayload } from 'src/auth/interfaces/token-payload.interface';
 import { CreateReviewDto } from 'src/review/dto/create-review.dto';
 import { ReviewService } from 'src/review/review.service';
+import { Review } from 'src/review/interfaces/review.interface';
 
 @Controller('products')
 export class ProductController {
@@ -48,20 +49,33 @@ export class ProductController {
 		}
 	}
 
-	@Post('/reviews')
+	@Post('/:productId/reviews')
 	@UseGuards(UserAuthGuard, RolesGuard)
 	@Roles('USER', 'ADMIN')
 	async createReview(
 		@User() user: TokenPayload,
 		@Body() createReviewDto: CreateReviewDto,
+        @Req() req: Request
 	): Promise<void> {
 		try {
-			await this.reviewService.createReview(user.id, createReviewDto);
+			await this.reviewService.createReview(user.id, parseInt(req.params.productId), createReviewDto);
 		} catch (e) {
 			throw new HttpException(
-				e.message || 'Failed to update shipping addresse',
+				e.message || 'Failed to create a review',
 				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
 			);
 		}
 	}
+
+    @Get('/:productId/reviews')
+    async getAllReviewsOfProduct(@Req() req: Request): Promise<Review[]> {
+        try {
+			return await this.reviewService.getAllReviewsOfProduct(parseInt(req.params.productId))
+		} catch (e) {
+			throw new HttpException(
+				e.message || 'Failed to get reviews',
+				e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+			);
+		}
+    }
 }
