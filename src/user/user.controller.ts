@@ -41,7 +41,7 @@ export class UserController {
 	@Roles('USER', 'ADMIN')
 	async getUserInfo(@User() user: TokenPayload): Promise<UserInfo> {
 		try {
-			return this.userService.getUserInfo(user.id);
+			return await this.userService.getUserInfo(user.id);
 		} catch (e) {
 			throw new HttpException(
 				e.message || 'Failed to retrieve information about the user',

@@ -48,27 +48,6 @@ export class AdminController {
 		}
 	}
 
-	@Get('/products')
-	async getAllProducts(): Promise<Product[]> {
-		try {
-			const products = await this.productService.getAllProducts();
-			return products;
-		} catch (error) {
-			throw new InternalServerErrorException('Failed to retrieve products');
-		}
-	}
-
-	@Get('/products/:id')
-	async getProductById(@Req() req: Request): Promise<Product> {
-		try {
-			return this.productService.getProductById(parseInt(req.params.id));
-		} catch (e) {
-			throw new InternalServerErrorException(
-				'Failed to retrieve product with given ID',
-			);
-		}
-	}
-
 	@Put('/products/:id')
 	@UseGuards(UserAuthGuard, RolesGuard)
 	@Roles('ADMIN')

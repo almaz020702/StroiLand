@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -13,7 +13,7 @@ import { ShippingAddressModule } from 'src/shipping-address/shipping-address.mod
 	imports: [
 		PrismaModule,
 		EmailVerificationModule,
-		OrderModule,
+		forwardRef(()=>OrderModule),
 		ShippingAddressModule,
 		JwtModule.register({
 			secret: process.env.SECRET_KEY,

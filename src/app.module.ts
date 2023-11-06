@@ -13,6 +13,7 @@ import { ProductModule } from './product/product.module';
 import { PaymentModule } from './payment/payment.module';
 import { RolesModule } from './roles/roles.module';
 import { ShippingAddressModule } from './shipping-address/shipping-address.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
 	imports: [
@@ -29,6 +30,7 @@ import { ShippingAddressModule } from './shipping-address/shipping-address.modul
 		PaymentModule,
 		RolesModule,
 		ShippingAddressModule,
+		ReviewModule,
 	],
 	controllers: [AppController],
 	providers: [
