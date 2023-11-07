@@ -50,12 +50,21 @@ export class ProductService {
 		});
 	}
 
-	async getAllProducts(paginationDto: PaginationQueryDto): Promise<Product[]> {
+	async getAllProducts(
+		paginationDto: PaginationQueryDto,
+		search: string,
+	): Promise<Product[]> {
 		const offset = (paginationDto.page - 1) * paginationDto.limit;
 
 		return await this.prismaService.product.findMany({
 			skip: offset,
 			take: paginationDto.limit,
+			where: {
+				OR: [
+					{ name: { contains: search, mode: 'insensitive' } },
+					{ description: { contains: search, mode: 'insensitive' } },
+				],
+			},
 		});
 	}
 

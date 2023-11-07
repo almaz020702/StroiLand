@@ -34,9 +34,10 @@ export class ProductController {
 	@Get()
 	async getAllProducts(
 		@Query() paginationDto: PaginationQueryDto,
+		@Query('search') search: string
 	): Promise<Product[]> {
 		try {
-			const products = await this.productService.getAllProducts(paginationDto);
+			const products = await this.productService.getAllProducts(paginationDto, search);
 			return products;
 		} catch (e) {
 			throw new HttpException(
