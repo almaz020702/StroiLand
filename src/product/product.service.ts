@@ -52,19 +52,22 @@ export class ProductService {
 
 	async getAllProducts(
 		paginationDto: PaginationQueryDto,
-		search: string,
+		search?: string,
 	): Promise<Product[]> {
 		const offset = (paginationDto.page - 1) * paginationDto.limit;
+
+		const where = {};
+		if (search) {
+			where['OR'] = [
+				{ name: { contains: search, mode: 'insensitive' } },
+				{ description: { contains: search, mode: 'insensitive' } },
+			];
+		}
 
 		return await this.prismaService.product.findMany({
 			skip: offset,
 			take: paginationDto.limit,
-			where: {
-				OR: [
-					{ name: { contains: search, mode: 'insensitive' } },
-					{ description: { contains: search, mode: 'insensitive' } },
-				],
-			},
+			where,
 		});
 	}
 
