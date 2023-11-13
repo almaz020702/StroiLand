@@ -23,6 +23,7 @@ import { CreateReviewDto } from 'src/review/dto/create-review.dto';
 import { ReviewService } from 'src/review/review.service';
 import { Review } from 'src/review/interfaces/review.interface';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { FilterQueryDto } from './dto/filter-query.dto';
 
 @Controller('products')
 export class ProductController {
@@ -34,10 +35,15 @@ export class ProductController {
 	@Get()
 	async getAllProducts(
 		@Query() paginationDto: PaginationQueryDto,
-		@Query('search') search?: string
+		@Query('search') search?: string,
+		@Query() filterDto?: FilterQueryDto,
 	): Promise<Product[]> {
 		try {
-			const products = await this.productService.getAllProducts(paginationDto, search);
+			const products = await this.productService.getAllProducts(
+				paginationDto,
+				search,
+				filterDto
+			);
 			return products;
 		} catch (e) {
 			throw new HttpException(

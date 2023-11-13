@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as fs from 'fs';
 import { UpdateProductDto } from 'src/product/dto/update-product.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { FilterQueryDto } from './dto/filter-query.dto';
 
 @Injectable()
 export class ProductService {
@@ -53,10 +54,13 @@ export class ProductService {
 	async getAllProducts(
 		paginationDto: PaginationQueryDto,
 		search?: string,
+		filterDto?: FilterQueryDto,
 	): Promise<Product[]> {
 		const offset = (paginationDto.page - 1) * paginationDto.limit;
 
 		const where = {};
+
+		// Apply search criteria
 		if (search) {
 			where['OR'] = [
 				{ name: { contains: search, mode: 'insensitive' } },
@@ -64,7 +68,20 @@ export class ProductService {
 			];
 		}
 
-		return await this.prismaService.product.findMany({
+		// Filtering
+		if (filterDto.category) {
+			where['category'] = { name: { equals: filterDto.category } };
+		  }
+
+		if (filterDto.priceMin !== undefined && filterDto.priceMax !== undefined) {
+			where['price'] = { gte: filterDto.priceMin, lte: filterDto.priceMax };
+		} else if (filterDto.priceMin !== undefined) {
+			where['price'] = { gte: filterDto.priceMin };
+		} else if (filterDto.priceMax !== undefined) {
+			where['price'] = { lte: filterDto.priceMax };
+		}
+
+		return this.prismaService.product.findMany({
 			skip: offset,
 			take: paginationDto.limit,
 			where,
