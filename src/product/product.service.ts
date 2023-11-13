@@ -55,12 +55,13 @@ export class ProductService {
 		paginationDto: PaginationQueryDto,
 		search?: string,
 		filterDto?: FilterQueryDto,
+		sort?: string,
 	): Promise<Product[]> {
 		const offset = (paginationDto.page - 1) * paginationDto.limit;
 
-		const where = {};
+		const where: Record<string, any> = {};
 
-		// Apply search criteria
+		// Searching
 		if (search) {
 			where['OR'] = [
 				{ name: { contains: search, mode: 'insensitive' } },
@@ -71,7 +72,7 @@ export class ProductService {
 		// Filtering
 		if (filterDto.category) {
 			where['category'] = { name: { equals: filterDto.category } };
-		  }
+		}
 
 		if (filterDto.priceMin !== undefined && filterDto.priceMax !== undefined) {
 			where['price'] = { gte: filterDto.priceMin, lte: filterDto.priceMax };
@@ -81,11 +82,33 @@ export class ProductService {
 			where['price'] = { lte: filterDto.priceMax };
 		}
 
+		// Sorting
+		const orderBy = this.getOrderBy(sort);
+
 		return this.prismaService.product.findMany({
 			skip: offset,
 			take: paginationDto.limit,
 			where,
+			orderBy,
 		});
+	}
+
+	private getOrderBy(sort: string): Record<string, 'asc' | 'desc'> | undefined {		
+		if (!sort) {
+			return undefined;
+		}
+
+		const allowedSortFields = ['name', 'price', 'createdAt'];
+
+		const [field, order] = sort.split(':');
+
+		if (allowedSortFields.includes(field) && ['asc', 'desc'].includes(order)) {
+			let dynamicOrder = {};
+			dynamicOrder[field] = order;
+			return dynamicOrder;
+		}
+
+		return undefined;
 	}
 
 	async getProductById(productId: number): Promise<Product> {

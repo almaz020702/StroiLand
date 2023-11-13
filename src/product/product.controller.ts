@@ -37,12 +37,14 @@ export class ProductController {
 		@Query() paginationDto: PaginationQueryDto,
 		@Query('search') search?: string,
 		@Query() filterDto?: FilterQueryDto,
+		@Query('sort') sort?: string,
 	): Promise<Product[]> {
 		try {
 			const products = await this.productService.getAllProducts(
 				paginationDto,
 				search,
-				filterDto
+				filterDto,
+				sort,
 			);
 			return products;
 		} catch (e) {
